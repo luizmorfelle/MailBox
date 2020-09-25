@@ -1,0 +1,22 @@
+# depslib dependency file v1.0
+1600949872 source:c:\users\lipex\desktop\robotica\mailbox\main.cpp
+	<iostream>
+	"Email.h"
+	"GUI.h"
+
+1600876557 c:\users\lipex\desktop\robotica\mailbox\email.h
+	<iostream>
+
+1600955907 c:\users\lipex\desktop\robotica\mailbox\gui.h
+	<iostream>
+	<stdio.h>
+	<chrono>
+	<windows.h>
+	<conio.h>
+	"Email.h"
+
+1600916093 source:c:\users\lipex\desktop\robotica\mailbox\email.cpp
+	"Email.h"
+	<iostream>
+	<chrono>
+
