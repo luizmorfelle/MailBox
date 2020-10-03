@@ -1,0 +1,2 @@
+C:\Users\lipex\source\repos\MailBox\Debug\MailBox.exe
+C:\Users\lipex\source\repos\MailBox\Debug\MailBox.pdb
