@@ -2,60 +2,64 @@
 #include <iostream>
 #include <chrono>
 #include "Email.h"
+#include <windows.h>
 
 using namespace std;
 
 void startMailBox(MailBox& mailBox) {
-	mailBox.folder[0].firstEmail = nullptr;
-	mailBox.folder[1].firstEmail = nullptr;//
-	mailBox.folder[2].firstEmail = nullptr;//
-	mailBox.folder[3].firstEmail = nullptr;//
-	mailBox.folder[4].firstEmail = nullptr;//
+	mailBox.folder[0].firstEmail = nullptr; //Inicializa o inbox
+	mailBox.folder[1].firstEmail = nullptr; //Inicializa o Sent
+	mailBox.folder[2].firstEmail = nullptr; //Inicializa o Trash
+	mailBox.folder[3].firstEmail = nullptr; //Inicializa o Draft
 
-	mailBox.folder[0].name = "Inbox";    // Caixa de Entrada
-	mailBox.folder[1].name = "Sent";     // Enviados
-	mailBox.folder[2].name = "Trash";    // Lixeira
-	mailBox.folder[3].name = "Drafts";   // Rascunhos
-	mailBox.size = 4;                    // Define o numero de pastas inicial para 4
-	mailBox.actualFolder = 0;            // Define a pasta atual como Inbox
+
+	mailBox.folder[0].name = "Inbox";       // Caixa de Entrada
+	mailBox.folder[1].name = "Sent";        // Enviados
+	mailBox.folder[2].name = "Trash";       // Lixeira
+	mailBox.folder[3].name = "Drafts";      // Rascunhos
+	mailBox.size = 4;                       // Define o numero de pastas inicial para 4
+	mailBox.actualFolder = 0;               // Define a pasta atual como Inbox
 }
 
 /////// FOLDER FUNCTIONS ///////
 
-void createNewFolder(MailBox& mailBox, const string& name) {
-	if (foundFolder(mailBox, name) != -1) {
+void createNewFolder(MailBox& mailBox, const string& name) { // Função para criar nova Pasta
+	if (foundFolder(mailBox, name) != -1) { //se a função não retornar -1 é não foi encontrado dentro da pasta o nome pelo qual procuramos
 		cout << "Invalid name!" << endl;
+		Sleep(250);
 	}
-	else if (mailBox.size == 10) {
+	else if (mailBox.size == 10) { // tamanho maximo de pastas
 		cout << "No more space!" << endl;
+		Sleep(250);
 	}
-	else {
+	else { // uma nova pasta e cria uma nova lista encadeada simples contida dentro dessa pasta
 		mailBox.folder[mailBox.size].name = name;
 		mailBox.folder[mailBox.size].firstEmail = nullptr;
 		mailBox.size++;
 	}
 }
 
-int foundFolder(const MailBox& mailBox, const string& name) {
-	int control = 0;
-	for (int i = 0; i < mailBox.size; ++i) {
-		if (mailBox.folder[i].name == name) {
-			return control;
+int foundFolder(const MailBox& mailBox, const string& name) { //Função que busca uma pasta pelo nome e retorn um número inteiro
+	int control = 0; 
+	for (int i = 0; i < mailBox.size; ++i) { // procura dentro do vetor de pastas
+		if (mailBox.folder[i].name == name) { // quando encontrar uma pasta com o nome igual ao que procuramos
+			return control; // vai retornar o indice da pasta
 		}
 		else {
-			control++;
+			control++; 
 		}
 	}
-	return -1;
+	return -1; // se n encontrar nenhuma pasta com esse nome retorna -1
 
 }
 
-void deleteFolder(MailBox& mailBox, const string& name) {
-	if (foundFolder(mailBox, name) == -1) {
-		cout << "Invalid name!" << endl;
+void deleteFolder(MailBox& mailBox, const string& name) { // Função que apaga uma pasta
+	if (foundFolder(mailBox, name) == -1 || name == "Inbox" || name == "Sent" || name == "Trash" || name=="Drafts") { // ele vai procurar uma pasta com o nome que escrevemos e se não encontrar entra no if, e impede que apaguemos as pastas prinicpais
+		cout << "Invalid name!" << endl; 
+		Sleep(250); // espera 1/4 de segundo
 	}
-	else {
-		for (int i = foundFolder(mailBox, name); i <= mailBox.size; ++i) {
+	else { // se a pasta que queremos apagar existir
+		for (int i = foundFolder(mailBox, name); i <= mailBox.size; ++i) { // então faremos uma remoção na posição
 			mailBox.folder[i] = mailBox.folder[i + 1];
 		}
 		mailBox.size--;
@@ -63,26 +67,18 @@ void deleteFolder(MailBox& mailBox, const string& name) {
 
 }
 
-void moveBetweenFolders(MailBox& mailBox, const string& name) {
-	if (foundFolder(mailBox, name) == -1) {
-		cout << "Invalid name!" << endl;
-	}
-	else {
-		mailBox.actualFolder = foundFolder(mailBox, name);
-	}
-}
 
-bool verifyEmptyFolder(MailBox mailBox, int num) {
-	if (mailBox.folder[num].firstEmail == nullptr) return true;
+bool verifyEmptyFolder(MailBox mailBox, int num) {  // Função que verifica se a pasta está vazia
+	if (mailBox.folder[num].firstEmail == nullptr) return true; // se a referencia de primeiro for nula ele retorna que a pasta está vazia
 	else return false;
 
 }
 
-int getActualFolder(MailBox mailBox) {
+int getActualFolder(MailBox mailBox) { // pega o indice da pasta que estamos navegando no momento
 	return mailBox.actualFolder;
 }
 
-void setActualFolder(MailBox& mailBox, int num) {
+void setActualFolder(MailBox& mailBox, int num) { // muda a pasta que estamos navegando no momento
 	mailBox.actualFolder = num;
 }
 
@@ -90,31 +86,49 @@ void setActualFolder(MailBox& mailBox, int num) {
 
 /////// EMAIL FUNCTIONS ///////
 
-Email* getLastEmail(MailBox mailBox) {
-	Email* nav = mailBox.folder[getActualFolder(mailBox)].firstEmail;
+Email* getLastEmail(MailBox mailBox) { //pega a referencia do ultimo email
+	Email* nav = mailBox.folder[getActualFolder(mailBox)].firstEmail; // cria um navegador a partir da referencia de primeiro elemento
 
-	while (nav->next != nullptr) {
+	while (nav->next != nullptr) { // navega até o ultimo elemento
 		nav = nav->next;
 	}
-	return nav;
+	return nav; // retorna a referencia de ultimo elemento
 }
 
-void receiveNewEmail(MailBox& mailBox) {
+void receiveNewEmail(MailBox& mailBox) { //cria um email aleatório a partir dos dados pré estabelecidos
 	setActualFolder(mailBox, 0);
 	Email* lastEmail = receiveRandomData(mailBox);
-	moveEmail(mailBox, lastEmail, 0);
+	moveEmail(mailBox, lastEmail, 0, 0);
 }
 
 
-void moveEmail(MailBox& mailBox, Email* email, int choose) {
-	setActualFolder(mailBox, choose);
-	if (verifyEmptyFolder(mailBox, choose)) {
-		mailBox.folder[getActualFolder(mailBox)].firstEmail = email;
-		email->next = nullptr;
+void moveEmail(MailBox& mailBox, Email* email, int choose, int origin) { // função de adicionar e mover emails de pasta
+	Email* nav = mailBox.folder[origin].firstEmail;// cria um navegador a partir da referencia do primeiro elemento
+
+	if(nav == email){ // se o elemento que queremos mover ou adicionar for o primeiro elemento
+		mailBox.folder[origin].firstEmail = email->next; // atualiza a referencia de primeiro elemento na pasta de origem
+	}else{
+		if (choose != origin) { // verifica se nào queremos mover para a mesma pasta
+
+			if (nav->next != nullptr) { // verifica se n é o ultimo elemento
+				while (nav->next != email) { // navega até o elemento-1 que queremos mover
+					nav = nav->next;
+				}
+				nav->next = email->next; // pegamos a referencia de proximo do elemento que queremos mover
+			}
+
+		}
+
+	}
+	setActualFolder(mailBox, choose); //muda a pasta atual para a pasta de destino
+
+	if (verifyEmptyFolder(mailBox, choose)) { // se a pasta estiver vazia
+		mailBox.folder[getActualFolder(mailBox)].firstEmail = email; // ele adiciona na primeira posição
+		email->next = nullptr; // referencia de proximo vazia
 	}
 	else {
-		email->next = mailBox.folder[getActualFolder(mailBox)].firstEmail;
-		mailBox.folder[getActualFolder(mailBox)].firstEmail = email;
+		email->next = mailBox.folder[getActualFolder(mailBox)].firstEmail; // referencia de proximo é o antigo primeiro elemento
+		mailBox.folder[getActualFolder(mailBox)].firstEmail = email; // diz que o novo dado é o primeiro elemento
 	}
 }
 
@@ -122,14 +136,14 @@ void moveEmail(MailBox& mailBox, Email* email, int choose) {
 
 
 
-string randomName() {
+string randomName() { // gera nomes aleatorios
 	string names[10] = { "Paul", "Steve", "Peter", "Mary", "Bob", "Sophie", "Joe", "Ellie", "Samuel", "James" };
 
 	return names[rand() % 10];
 
 }
 
-string randomSubject() {
+string randomSubject() { // Assuntos aleatorios
 	string subjects[10] = { "Party", "Reunion", "CoffeeBreak", "Married", "Work", "Honey", "Lunch", "Business",
 						   "Miss you", "Hello" };
 
@@ -137,24 +151,24 @@ string randomSubject() {
 
 }
 
-string randomContent() {
+string randomContent() { // conteudos dos emails aleatorios
 	string content[10] = {
 			"Praesent fermentum turpis non metus imperdiet, vitae tempus mauris maximus. ",
 			"Donec a turpis nisi. Donec aliquam arcu lectus, in lobortis odio facilisis nec.",
 			"Maecenas laoreet, neque a varius luctus, leo urna sollicitudin ligula,",
 			"sit amet scelerisque ante elit at erat.",
-			"5",
-			"6",
-			"7",
-			"8",
-			"9",
-			"10" };
+			"sit amet scelerisque ante elit at erat.",
+			"sit amet scelerisque ante elit at erat.",
+			"sit amet scelerisque ante elit at erat.",
+			"sit amet scelerisque ante elit at erat.",
+			"sit amet scelerisque ante elit at erat.",
+			"sit amet scelerisque ante elit at erat." };
 
 	return content[rand() % 3];
 
 }
 
-Email* receiveRandomData(MailBox& mailBox) {
+Email* receiveRandomData(MailBox& mailBox) { // junta os dados para criar um email aleatorio de testes
 
 	auto* nav = new Email;
 
@@ -180,13 +194,12 @@ Email* receiveRandomData(MailBox& mailBox) {
 
 }
 
-void setReaded(Email* email) {
+void setReaded(Email* email) { // seta um email que foi lidos
 	email->read = email->read ? email->read = false : email->read = true;
-	cout << email->read;
 }
 
 
-int numberOfMessagesOfMailBox(MailBox mailBox) {
+int numberOfMessagesOfMailBox(MailBox mailBox) { // conta quantos emails tem na caixa de emails
 	int cont = 0;
 	for (int i = 0; i < mailBox.size; i++) {
 		cont += numberOfMessagesOfFolder(mailBox, i);
@@ -194,7 +207,7 @@ int numberOfMessagesOfMailBox(MailBox mailBox) {
 	return cont;
 }
 
-int numberOfMessagesOfFolder(MailBox& mailBox, int number) {
+int numberOfMessagesOfFolder(MailBox& mailBox, int number) { // quantos emails tem numa pasta especifica
 
 	int cont = 0;
 
@@ -215,7 +228,7 @@ int numberOfMessagesOfFolder(MailBox& mailBox, int number) {
 
 }
 
-int numberOfMessagesUnread(MailBox& mailBox, int number)
+int numberOfMessagesUnread(MailBox& mailBox, int number) // quantas mensagens não foram lidas
 {
 	int cont = 0;
 

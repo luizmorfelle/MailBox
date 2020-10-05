@@ -1,25 +1,28 @@
 #include <iostream>
-#include <stdio.h>
-#include <chrono>
-#include <string>
-#include <windows.h>
-#include <conio.h>
+#include <stdio.h> // função auxiliar do GUI
+#include <chrono> // Biblioteca para trabalhar com tempo
+#include <string> // Função para trabalhar com string 
+#include <windows.h> // libera algumas operações de console
+#include <conio.h> // Função auxiliar do GUI
 #include "Email.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 
 using namespace std;
 
-MailBox mail;
-bool Exit = false;
-bool inMenu = false;
+MailBox mail;				  // Caixa de email atual
+bool Exit = false; 			  // Variavel de controle se quer sair
+bool inMenu = false;		  // Variavel de controle se está no Menu
+bool inFolder = false;		  // Variavel de controle se está no Pasta 
+bool inMessageMenu = false;	  // Variavel de controle se está no Email
+Email* navigator;			  // Ponteiro para ter acesso global 
 
 
 void choose(int);
 void Menu();
 void controlCursor(int, int, int, int);
 
-void hidecursor() {
+void hidecursor() {  //Função para esconder o cursor
 	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_CURSOR_INFO info;
 	info.dwSize = 100;
@@ -27,13 +30,13 @@ void hidecursor() {
 	SetConsoleCursorInfo(consoleHandle, &info);
 }
 
-void gotoxy(int x, int y) {
+void gotoxy(int x, int y) { //Função para o cursor se mover na tela
 	COORD coord;
 	coord.X = x;
 	coord.Y = y;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
-void cursor(int menuPosition, int posX, int posY, int maxPos, int jumpLines) {
+void cursor(int menuPosition, int posX, int posY, int maxPos, int jumpLines) { // Função que desenha o cursor na tela
 	for (int i = 0; i <= maxPos; i++) {
 		if (i == menuPosition) {
 			gotoxy(posX, (i * jumpLines) + posY);
@@ -45,7 +48,7 @@ void cursor(int menuPosition, int posX, int posY, int maxPos, int jumpLines) {
 		}
 	}
 }
-void drawMenu(int x, int y) {
+void drawMenu(int x, int y) { // Função que desenha o Menu
 	gotoxy(40, 1);
 	cout << "Inlook Personal E-Mail";
 	gotoxy(x, y);
@@ -59,37 +62,39 @@ void drawMenu(int x, int y) {
 	gotoxy(x, y + 8);
 	cout << "\tExit";
 }
-void Menu() {
-	inMenu = true;
-	system("cls");
-	system("color 0E");
-	hidecursor();
-	drawMenu(5, 2);
-	controlCursor(5, 2, 4, 2);
+void Menu() {	  // Função que controla o Menu
+	inMenu = true; 
+	inFolder = false;
+	inMessageMenu = false;
+	system("cls");	           // Limpa a tela
+	system("color 0E");        // Muda a cor 
+	hidecursor();		       // Esconde o cusor
+	drawMenu(5, 2);            // Desenha o Menu
+	controlCursor(5, 2, 4, 2); // Mostra o cursor e controla ele
 }
-void controlCursor(int posX, int posY, int maxPos,int jumpLines) {
+void controlCursor(int posX, int posY, int maxPos,int jumpLines) { // Controla o cursor 
 	Exit = false;
-	int menuPosition = 0;
+	int menuPosition = 0; // Posição no Menu
 	while (!Exit) {
-		cursor(menuPosition, posX, posY, maxPos,jumpLines);
+		cursor(menuPosition, posX, posY, maxPos,jumpLines); // Controla cursor no Menu
 		char key = _getch();
 
 		switch (key) {
-		case 72 : case 'w': case 'W':
+		case 72 : case 'w': case 'W': // Cursor pra cima
 			menuPosition -= 1;
 			if (menuPosition < 0) menuPosition = maxPos;
 			break;
 
-		case 80: case 's': case 'S':
+		case 80: case 's': case 'S': // Cursor pra baixo
 			menuPosition += 1;
 			if (menuPosition > maxPos) menuPosition = 0;
 			break;
 
-		case 13:
+		case 13: // Ao apertar Enter envia a posição do cursor 
 			choose(menuPosition);
 			break;
 
-		case 27:
+		case 27: // Caso aperte ESC,volta ao menu
 			Menu();
 			break;
 		}
@@ -97,12 +102,12 @@ void controlCursor(int posX, int posY, int maxPos,int jumpLines) {
 
 }
 
-void startGui(MailBox mailBox) {
+void startGui(MailBox mailBox) { // Inicia o GUI
 	mail = mailBox;
 	Menu();
 }
 
-void createFolder() {
+void createFolder() { // Criar Pasta
 	string name;
 	gotoxy(40, 5);
 	cout << "Enter folders name: ";
@@ -112,7 +117,7 @@ void createFolder() {
 	Menu();
 }
 
-void deleteFolderG() {
+void deleteFolderG() { // Apaga pasta
 	string name;
 	gotoxy(40, 5);
 	cout << "Enter folders name: ";
@@ -121,7 +126,7 @@ void deleteFolderG() {
 	deleteFolder(mail, name);
 	Menu();
 }
-void newEmail() {
+void newEmail() { // Cria e recebe novo email
 	auto* nav = new Email;
 	cin.ignore();
 	gotoxy(40, 5);
@@ -138,7 +143,7 @@ void newEmail() {
 
 	struct tm newtime;
 
-	time_t t = time(0);   // get time now
+	time_t t = time(0);					// recebe o tempo atual do computador 
 	errno_t err = localtime_s(&newtime,&t);
 
 	nav->time.date.year     = newtime.tm_year + 1900;
@@ -152,7 +157,7 @@ void newEmail() {
 
 	char answer;
 	gotoxy(40, 15);
-	cout << "Do you want to send this email? (y/n) ";
+	cout << "Do you want to send this email? (y/n) "; // Verifica se o usuário deseja enviar o email ou salvar como rascunho
 	cin >> answer;
 	int choose;
 	if (answer == 'y' || answer == 'Y') {
@@ -161,38 +166,44 @@ void newEmail() {
 	else {
 		choose = 3;
 	}
-	moveEmail(mail, nav, choose);
+	moveEmail(mail, nav, choose, choose);
 	Menu();
 }
 
-void showFoldersInMailBox() {
+void showFoldersInMailBox() { // Mostra todas as pastas da caixa de email
 	for (int i = 0; i < mail.size; ++i) {
 		gotoxy(40, 5 + (i * 2));
-		cout << "  " << mail.folder[i].name << endl;
+		cout << "  " << mail.folder[i].name << " | Number of Mails: " <<numberOfMessagesOfFolder(mail, i) <<"|" <<endl;
 	}
-	controlCursor(40, 5, mail.size, 2);
+	controlCursor(40, 5, mail.size - 1 , 2);
 }
 
-void showTimeStamp(MailBox mailBox, Email* email) {
+void showTimeStamp(MailBox mailBox, Email* email) { // Mostra o tempo 
 	TimeStamp nav = email->time;
 
 	cout << nav.schedule.hour << ":" << nav.schedule.min << ":" << nav.schedule.sec << "  " << nav.date.month << "/"
 		<< nav.date.day << "/" << nav.date.year;
 }
 
-void showActualFolder(MailBox mail) {
+void showActualFolder(MailBox mail) { // Mostra todos os emails da pasta selecionada
 	system("cls");
 	drawMenu(5, 2);
 	int y = 4;
 
-	if (verifyEmptyFolder(mail, getActualFolder(mail))) {
+	if (verifyEmptyFolder(mail, getActualFolder(mail))) { // Verifica se a pasta está vazia
 		gotoxy(40, y);
 		cout << "Empty Folder!" << endl;
+		_getch();
+		Menu();
 	}
 	else {
 		Email* nav = mail.folder[getActualFolder(mail)].firstEmail;
 		while (nav != nullptr) {
+			
 			gotoxy(40, y + 1);
+			if (nav->read) cout << "Read - ";
+			else cout << "NotRead - ";
+			
 			cout << nav->receiver + "  " + nav->subject << "                ";
 
 			showTimeStamp(mail, nav);
@@ -201,12 +212,14 @@ void showActualFolder(MailBox mail) {
 
 			nav = nav->next;
 			y = y + 5;
+
 		}
+		controlCursor(37, 5, numberOfMessagesUnread(mail, getActualFolder(mail)) - 1, 5);
+		
 	}
-	controlCursor(37, 5, numberOfMessagesUnread(mail, getActualFolder(mail)) - 1, 5);
-	Menu();
+	
 }
-void showOnlyUnread(MailBox mail) {
+void showOnlyUnread(MailBox mail) { // Mostra apenas os emails não lidos
 	system("cls");
 	drawMenu(5, 2);
 	int y = 4;
@@ -214,33 +227,40 @@ void showOnlyUnread(MailBox mail) {
 	if (verifyEmptyFolder(mail, getActualFolder(mail))) {
 		gotoxy(40, y);
 		cout << "Empty Folder!" << endl;
+		_getch();
+		Menu();
 	}
 	else {
 		Email* nav = mail.folder[getActualFolder(mail)].firstEmail;
 		while (nav != nullptr) {
 			if (!nav->read) {
-
+			
 				gotoxy(40, y + 1);
+				if (nav->read) cout << "Read - ";
+				else cout << "NotRead - ";
 				cout << nav->receiver + "  " + nav->subject << "                ";
 
 				showTimeStamp(mail, nav);
 				gotoxy(40, y + 3);
 				cout << nav->content;
 
-				nav = nav->next;
+				
 				y = y + 5;
 			}
+			nav = nav->next;
+
 		}
+		controlCursor(37, 5, numberOfMessagesUnread(mail, getActualFolder(mail)) - 1, 5);
+		
 	}
-	controlCursor(37, 5, numberOfMessagesUnread(mail, getActualFolder(mail)) - 1, 5);
-	Menu();
+	
 }
-bool onlyRead() {
+bool onlyRead() { // Pergunta ao usuário se ele quer ver apenas os não lidos
 	char choose;
 	system("cls");
 	drawMenu(5, 2);
 	gotoxy(40, 5);
-	cout << "See only unread (y/n) ?";
+	cout << "See only unread (y/n) ?: ";
 	cin >> choose;
 
 	if(choose == 'Y' or choose == 'y'){
@@ -252,10 +272,34 @@ bool onlyRead() {
 	
 }
 
+Email* navMail(int pos){ // Função que retorna o email desejado
+	Email* nav = mail.folder[getActualFolder(mail)].firstEmail;
+	int count = 0;
+		while (count < pos) {
+			nav = nav->next;
+			count++;
+		}
+		return nav;
+}
 
-void choose(int pos) {
+void messageMenu() { // Mostra as opções dos emails
+	inMessageMenu = true;
+	
+	system("cls");
+	gotoxy(5, 5);
+	cout << "\tMark as Read/Unread";
+	gotoxy(5, 7);
+	cout << "\tDelete Email";
+	gotoxy(5, 9);
+	cout << "\tMove Email";
+	gotoxy(5, 11);
+	cout << "\tCancel";
+	controlCursor(5, 5, 3, 2);
 
-	if (inMenu) {
+}
+void choose(int pos) { // Função que controla todas as escolhas dos Menus
+
+	if (inMenu) { //  Se está no menu
 		inMenu = false;
 		switch (pos) {
 		case 0:
@@ -275,18 +319,53 @@ void choose(int pos) {
 			break;
 		}
 	}
-	else {
+	else if (inFolder){ //  Se está na pasta
+		inFolder = false;
+		Email* nav = navMail(pos);
+		navigator = nav;
+		gotoxy(0, 0);
+		messageMenu();
+
+
+	} else if(inMessageMenu){ // Se está no EMail dentro da pasta
+		inMessageMenu = false;
+		string name;
+		switch (pos) {
+		case 0: // seta se está lido ou não lido
+			setReaded(navigator);
+			Menu();
+			break;
+		case 1:
+			moveEmail(mail, navigator, 2, mail.actualFolder); // Move o email para a lixeira
+			Menu();
+			break;
+		case 2: // move email para uma pasta especifica
+			system("cls");
+			gotoxy(7, 7);
+			cin.ignore();
+			cout << "Which folder do you want to move to? : ";
+			getline(cin, name);
+			moveEmail(mail, navigator, foundFolder(mail, name),mail.actualFolder);
+			Menu();
+			break;
+		case 3: // cancela a operação e volta para o menu principal
+			Menu();
+			break;
+		}
+	}
+	
+	
+	else{ // Mostra os emails 
 		system("cls");
 		setActualFolder(mail, pos);
-
+		inFolder = true;
 		if(onlyRead()){
 			showOnlyUnread(mail);
-			
 		}else{
 			showActualFolder(mail);
 		}
-		
 		_getch();
+		Menu();
 	}
 
 }

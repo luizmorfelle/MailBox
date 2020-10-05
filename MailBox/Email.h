@@ -4,54 +4,52 @@
 #include <iostream>
 using namespace std;
 
-struct Schedule {
-    int hour;
-    int min;
-    int sec;
+struct Schedule { // Estrutura do horário
+    int hour; // Hora
+    int min;  // Minuto
+    int sec;  // Segundo
 };
 
-struct Date {
-    int day;
-    int month;
-    int year;
+struct Date { // Estrutura da data
+    int day;    //Dia
+    int month;  //Mês
+    int year;   //Ano
 };
 
-struct  TimeStamp {
-    Date date;
-    Schedule schedule;
+struct  TimeStamp {     // Estrutura de tempo
+    Date date;          // Data 
+    Schedule schedule;  // Horário
 };
 
-struct Email {
-    bool read = false;
-    string receiver;
-    string subject;
-    TimeStamp time;
-    string content;
-    Email* next;
+struct Email {    //Estrutura do Email
+    bool read = false;  //Variável para saber se o email foi lido
+    string receiver;    //Variável para destinatário
+    string subject;     //Variável para remetente
+    TimeStamp time;     //Variável para guardar a data da mensagem 
+    string content;     //Variável para guardar o conteudo do email
+    Email* next;        //Ponteiro o próximo email
 };
 
-struct Folder {
-    string name;
-    Email* firstEmail;
+struct Folder {  // Estrutura das pasta
+    string name; // Nome da pasta
+    Email* firstEmail; // Ponteiro para o primeiro email
 
 };
 
-struct MailBox {
-    Folder folder[10];
-    int actualFolder;
-    int size = 0;
+struct MailBox { // Estrutura da caixa de Email
+    Folder folder[10]; // Array com 10 posições para as pastas 
+    int actualFolder; // variável de controle para saber em qual pasta está
+    int size = 0;     // variável de controle para o tamanho da lista
 };
 
 
 void startMailBox(MailBox&);
 
-void createNewFolder(MailBox&, const string&);
+void createNewFolder(MailBox&, const string&); 
 
 int foundFolder(const MailBox&, const string&);
 
 void deleteFolder(MailBox&, const string&);
-
-void moveBetweenFolders(MailBox&, const string&);
 
 bool verifyEmptyFolder(MailBox, int);
 
@@ -69,7 +67,7 @@ void createNewEmail(MailBox&);
 
 Email* receiveEmailData(MailBox&);
 
-void moveEmail(MailBox&, Email*, int);
+void moveEmail(MailBox&, Email*, int, int);
 
 void receiveNewEmail(MailBox&);
 
